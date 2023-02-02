@@ -19,9 +19,9 @@ export async function appRoutes(app: FastifyInstance) {
         title,
         created_at: today,
         weekDays: {
-          create: weekDays.map((weekDays) => {
+          create: weekDays.map((weekDay) => {
             return {
-              week_day: weekDays,
+              week_day: weekDay,
             };
           }),
         },

@@ -24,6 +24,8 @@ export function HabitDay({
 
   const dayAndMonth = dayjs(date).format("DD/MM");
   const dayOfWeek = dayjs(date).format("dddd");
+  const today = dayjs().startOf("day").toDate();
+  const isCurrentDay = dayjs(date).isSame(today);
 
   function handleCompletedChanged(completed: number) {
     setCompleted(completed);
@@ -45,6 +47,7 @@ export function HabitDay({
             "bg-violet-600 border-violet-500":
               completedPercentage >= 60 && completedPercentage < 80,
             "bg-violet-500 border-violet-400": completedPercentage >= 80,
+            "border-white border-4": isCurrentDay,
           }
         )}
       />

@@ -32,7 +32,7 @@ export function HabitDay({
       ? generateProgressPercentage(amountOfHabits, amountCompleted)
       : 0;
 
-  const today = dayjs(date).startOf("day").toDate();
+  const today = dayjs().startOf("day").toDate();
   const isCurrentDay = dayjs(date).isSame(today);
 
   return (

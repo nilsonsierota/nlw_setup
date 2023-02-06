@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import { View, ScrollView, Text, Alert } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import dayjs from "dayjs";
+import clsx from "clsx";
 
 import { api } from "../lib/axios";
+import { generateProgressPercentage } from "../utils/generate-progress-percentage";
+
 import { BackButton } from "../components/BackButton";
 import { ProgressBar } from "../components/ProgressBar";
 import { Checkbox } from "../components/Checkbox";
 import { Loading } from "../components/Loading";
-import { generateProgressPercentage } from "../utils/generate-progress-percentage";
+import { HabitsEmpty } from "../components/HabitsEmpty";
 
 interface Params {
   date: string;
@@ -31,6 +34,7 @@ export function Habit() {
   const { date } = route.params as Params;
 
   const parserDate = dayjs(date);
+  const isDateInPast = parserDate.endOf("day").isBefore(new Date());
   const dayOfWeek = parserDate.format("dddd");
   const dayEndMonth = parserDate.format("DD/MM");
 
@@ -63,12 +67,19 @@ export function Habit() {
   }
 
   async function handleToggleHabit(habitId: string) {
-    if (completedHabits.includes(habitId)) {
-      setCompletedHabits((prevState) =>
-        prevState.filter((habit) => habit !== habitId)
-      );
-    } else {
-      setCompletedHabits((prevState) => [...prevState, habitId]);
+    try {
+      await api.patch(`/habits/${habitId}/toggle`);
+
+      if (completedHabits.includes(habitId)) {
+        setCompletedHabits((prevState) =>
+          prevState.filter((habit) => habit !== habitId)
+        );
+      } else {
+        setCompletedHabits((prevState) => [...prevState, habitId]);
+      }
+    } catch (error) {
+      Alert.alert("Ops", "Não foi possível atualizar o status do hábito.");
+      console.log(error);
     }
   }
 
@@ -98,17 +109,31 @@ export function Habit() {
 
         <ProgressBar progress={habitsProgress} />
 
-        <View className="mt-6">
-          {dayInfo?.possibleHabits &&
+        <View
+          className={clsx("mt-6", {
+            ["opacity-50"]: isDateInPast,
+          })}
+        >
+          {dayInfo?.possibleHabits ? (
             dayInfo?.possibleHabits.map((habit) => (
               <Checkbox
                 key={habit.id}
                 title={habit.title}
                 checked={completedHabits.includes(habit.id)}
+                disabled={isDateInPast}
                 onPress={() => handleToggleHabit(habit.id)}
               />
-            ))}
+            ))
+          ) : (
+            <HabitsEmpty />
+          )}
         </View>
+
+        {isDateInPast && (
+          <Text className="text-white mt-10 text-cent">
+            Você não pode editar hábitos de uma data passada.
+          </Text>
+        )}
       </ScrollView>
     </View>
   );

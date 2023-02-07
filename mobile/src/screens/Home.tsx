@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import dayjs from "dayjs";
 
 import { api } from "../lib/axios";
-import { generateDatesFromYearBeginning } from "../utils/generate-dates-from-year-beginning";
+import { generateRangeDatesFromYearStart } from "../utils/generate-dates-from-year-beginning";
 
 import { Header } from "../components/Header";
 import { HabitDay, DAY_SIZE } from "../components/HabitDay";
 import { Loading } from "../components/Loading";
-import dayjs from "dayjs";
 
 const weekDays = ["D", "S", "T", "Q", "Q", "S", "S"];
-const datesFromYearStart = generateDatesFromYearBeginning();
+const datesFromYearStart = generateRangeDatesFromYearStart();
 const minimumSummaryDatesSizes = 18 * 5;
 const amountOfDaysToFill = minimumSummaryDatesSizes - datesFromYearStart.length;
 
@@ -23,9 +23,10 @@ type SummaryProps = Array<{
 }>;
 
 export function Home() {
-  const { navigate } = useNavigation();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<SummaryProps | null>(null);
+
+  const { navigate } = useNavigation();
 
   async function fetchData() {
     try {
@@ -41,9 +42,11 @@ export function Home() {
     }
   }
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   if (loading) {
     return <Loading />;
@@ -75,7 +78,7 @@ export function Home() {
           <View className="flex-row flex-wrap">
             {datesFromYearStart.map((date) => {
               const dayWithHabits = summary.find((day) => {
-                dayjs(date).isSame(day.date, "day");
+                return dayjs(date).isSame(day.date, "day");
               });
 
               return (

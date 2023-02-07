@@ -54,7 +54,7 @@ export function Habit() {
       });
 
       setDayInfo(response.data);
-      setCompletedHabits(response.data.completedHabits);
+      setCompletedHabits(response.data.completedHabits ?? []);
     } catch (error) {
       Alert.alert(
         "Ops",
